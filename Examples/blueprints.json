@@ -1,0 +1,22 @@
+﻿{
+  "Entity1": {
+    "Movable": {},
+    "Position": {
+      "value": {
+        "x": 1.0,
+        "y": 2.0
+      }
+    },
+    "Speed": {
+      "value": 1.0
+    },
+    "Asset": {
+      "value": "Player"
+    }
+  },
+  "Entity2": {
+    "Asset": {
+      "value": "Player"
+    }
+  }
+}
