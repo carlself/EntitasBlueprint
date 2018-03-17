@@ -76,7 +76,8 @@ namespace Entitas.Serialization
             var component = entity.CreateComponent(m_index, m_type);
             foreach (var m in Members)
             {
-                if (m_componentMembers.TryGetValue(m.Name, out var memberInfo))
+                PublicMemberInfo memberInfo;
+                if (m_componentMembers.TryGetValue(m.Name, out memberInfo))
                 {
                     memberInfo.SetValue(component, m.Value);
                 }
