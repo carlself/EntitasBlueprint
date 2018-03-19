@@ -66,4 +66,5 @@ public class Test : MonoBehavior
 
 * Array data member in component support
 * Entity serialization
+* Integration with Unity editor
 * Protobuffer format support
