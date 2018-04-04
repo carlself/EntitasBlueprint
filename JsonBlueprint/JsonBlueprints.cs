@@ -49,50 +49,16 @@ namespace Entitas.Serialization.Json
         ComponentBlueprint ParseComponentBlueprint(string name, JsonData componentData)
         {
             var componentBlueprint = new ComponentBlueprint(name);
-            var publicMembers = componentBlueprint.GetComponentMembers();
             var members = new SerializableMember[componentData.Count];
             int i = 0;
             foreach (KeyValuePair<string, JsonData> n in componentData)
             {
-                members[i] = ParseMember(publicMembers[n.Key], n.Key, n.Value);
+                members[i] = new JsonSerializableMember(n.Key, n.Value);
                 i++;
             }
 
             componentBlueprint.Members = members;
             return componentBlueprint;
-        }
-
-        // TODO: support array
-        SerializableMember ParseMember(PublicMemberInfo memberInfo, string memberName, JsonData memberData)
-        {
-            object obj = null;
-            switch (memberData.GetJsonType())
-            {
-                case JsonType.None:
-                    break;
-                case JsonType.Object:
-                    obj = JsonMapper.ToObject(JsonMapper.ToJson(memberData),memberInfo.type);
-                    break;
-                case JsonType.Array:
-//                    obj = JsonMapper.ToObject(JsonMapper.ToJson(memberData), memberInfo.type)
-                    break;
-                case JsonType.String:
-                    obj = Convert.ChangeType((string) memberData, memberInfo.type);
-                    break;
-                case JsonType.Int:
-                    obj = Convert.ChangeType((int) memberData, memberInfo.type);
-                    break;
-                case JsonType.Long:
-                    obj = Convert.ChangeType((long) memberData, memberInfo.type);
-                    break;
-                case JsonType.Double:
-                    obj = Convert.ChangeType((double) memberData, memberInfo.type);
-                    break;
-                case JsonType.Boolean:
-                    obj = Convert.ChangeType((bool) memberData, memberInfo.type);
-                    break;
-            }
-            return new SerializableMember(memberName, obj);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Entitas.Serialization
         public SerializableMember[] Members; // Component members
         private int m_index;
         private readonly string m_name; // Component name without suffix
-        
+
         Dictionary<string, PublicMemberInfo> m_componentMembers;
 
         private Type m_type;
@@ -20,33 +20,22 @@ namespace Entitas.Serialization
             m_index = -1;
         }
 
-        Type GetComponentType()
+        Tuple<Type, int> GetComponentType(Entity entity)
         {
-            var componentName = m_name + "Component";
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies)
+            for (int i = 0; i < entity.contextInfo.componentTypes.Length; i++)
             {
-                var type = assembly.GetType(componentName);
-                if (type != null) 
+                var t = entity.contextInfo.componentTypes[i];
+                if (t.Name.Contains(m_name))
                 {
-                    return type;
+                    return Tuple.Create(t, i);
                 }
             }
             return null;
         }
 
-        public Dictionary<string, PublicMemberInfo> GetComponentMembers()
+        Dictionary<string, PublicMemberInfo> GetComponentMembers()
         {
-            if (m_type == null)
-                m_type = GetComponentType();
-
-            if (m_type == null)
-            {
-                throw new ComponentBlueprintException($"Type '{m_name}Component'  doesn't exist in any assembly!" ,
-                    "Please check the full type name.");
-            }
-            
-            if (m_componentMembers == null) 
+            if (m_componentMembers == null)
             {
                 var memberInfos = m_type.GetPublicMemberInfos();
                 m_componentMembers = new Dictionary<string, PublicMemberInfo>(memberInfos.Count);
@@ -62,15 +51,22 @@ namespace Entitas.Serialization
 
         public void Apply(Entity entity)
         {
-            if (m_index == -1)
+            if (m_type == null)
             {
-                m_index = Array.IndexOf(entity.contextInfo.componentTypes, m_type);
-            }
+                var tuple = GetComponentType(entity);
+                if (tuple == null)
+                {
+                    throw new ComponentBlueprintException($"Could not find '{m_name}Component' in '{entity.contextInfo.name}Context'",
+                        "Please check component definition");
+                }
+                m_type = tuple.Item1;
+                m_index = tuple.Item2;
 
-            if (m_index == -1)
-            {
-                throw new ComponentBlueprintException($"Could not find '{m_name}Component' in '{entity.contextInfo.name}Context'",
-                    "Please check the componnet definition");
+                var publicMembers = GetComponentMembers();
+                foreach(var member in Members)
+                {
+                    member.Parse(publicMembers[member.Name]);
+                }
             }
 
             var component = entity.CreateComponent(m_index, m_type);
@@ -91,10 +87,10 @@ namespace Entitas.Serialization
             entity.AddComponent(m_index, component);
         }
     }
-    
-    public class ComponentBlueprintException : EntitasException 
+
+    public class ComponentBlueprintException : EntitasException
     {
-        public ComponentBlueprintException(string message, string hint) :base(message,hint)
+        public ComponentBlueprintException(string message, string hint) : base(message, hint)
         {
         }
     }
