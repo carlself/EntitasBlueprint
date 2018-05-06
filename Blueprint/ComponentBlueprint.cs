@@ -25,7 +25,8 @@ namespace Entitas.Serialization
             for (int i = 0; i < entity.contextInfo.componentTypes.Length; i++)
             {
                 var t = entity.contextInfo.componentTypes[i];
-                if (t.Name.Contains(m_name))
+                if(t.Name.Length == m_name.Length + "Component".Length 
+                && t.Name.StartsWith(m_name) && t.Name.EndsWith("Component"))
                 {
                     return Tuple.Create(t, i);
                 }
